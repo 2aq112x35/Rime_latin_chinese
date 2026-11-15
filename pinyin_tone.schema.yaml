@@ -1,0 +1,71 @@
+# Rime schema
+# encoding: utf-8
+#
+# 带调拼音 —— 输入拼音 + 声调键，输出带声调符号的汉语拼音
+#
+#   q = 一声(阴平)   w = 二声(阳平)   e = 三声(上声)   r = 四声(去声)
+#   不加声调键 = 轻声（也可以不标调）
+#
+#   maq      -> mā          mae      -> mǎ
+#   maw      -> má          mar      -> mà
+#   nie haoe -> nǐ hǎo      lvr      -> lǜ
+#
+# 依赖：librime-lua（小狼毫 0.15 及以上、fcitx5-rime、同文等常见发行版都自带）
+
+schema:
+  schema_id: pinyin_tone
+  name: 带调拼音
+  version: "1.0"
+  author:
+    - 吴庆鑫
+  description: |
+    输入汉语拼音，音节末尾加声调键，输出带声调符号的拼音。
+    q 一声（阴平）、w 二声（阳平）、e 三声（上声）、r 四声（去声）。
+    例：maq → mā，maw → má，mae → mǎ，mar → mà。
+    多音节之间用空格或单引号分隔，如 nie haoe → nǐ hǎo。
+    不打声调键时，候选里会列出该音节的四个声调供挑选。
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 拼音, 西文 ]
+  - name: full_shape
+    states: [ 半角, 全角 ]
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - lua_translator@pinyin_tone
+  filters:
+    - uniquifier
+
+speller:
+  alphabet: zyxwvutsrqponmlkjihgfedcba
+  delimiter: " '"
+  # 不做简拼、不做模糊音：声调键 q/w/e/r 本身就是字母，任何拼写变形都会把声调键吃掉
+
+punctuator:
+  import_preset: symbols
+
+key_binder:
+  import_preset: default
+
+recognizer:
+  import_preset: default
